@@ -2,14 +2,14 @@ name: arc.io Automated Subdomain & Nuclei Scan
 
 on:
   schedule:
-    - cron: '0 0 * * *'
-  workflow_dispatch:
+    - cron: '0 0 * * *' 
+  workflow_dispatch: 
 
 jobs:
   security_scan:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
-
+    timeout-minutes: 60 
+    
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -19,65 +19,16 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Set up Go Environment
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.21'
-
-      - name: Run Recon and Nuclei Scan Script
+      - name: Install dependencies
         run: |
-          python -c '
-          import subprocess, sys, shutil, os
+          python -m pip install --upgrade pip
+          pip install requests
 
-          def run_cmd(command):
-              print(f"[*] Running command: {command}")
-              process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
-              return process.returncode, process.stdout, process.stderr
+      - name: Run Scan Script
+        run: python scan.py 
 
-          def is_installed(name):
-              return shutil.which(name) is not None
-
-          go_bin = os.path.expanduser("~/go/bin")
-          if go_bin not in os.environ["PATH"]:
-              os.environ["PATH"] += os.pathsep + go_bin
-
-          if not is_installed("nuclei"):
-              run_cmd("go install github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest")
-          
-          # تم تعديل هذا السطر ليعمل مرة واحدة فقط إذا لم تكن القوالب موجودة
-          # أو يمكنك حذفه إذا كنت تريد دائماً أحدث القوالب، لكنه يبطئ العملية.
-          # run_cmd("nuclei -update-templates") 
-
-          if not is_installed("subfinder"):
-              run_cmd("go install github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest")
-
-          output_dir = "scan_results"
-          os.makedirs(output_dir, exist_ok=True)
-
-          target_domain = "arc.io"
-          subdomains_file = os.path.join(output_dir, f"{target_domain}_subdomains.txt")
-          output_report = os.path.join(output_dir, f"{target_domain}_nuclei_report.txt")
-
-          print(f"--- Step 2: Enumerating subdomains for target: {target_domain} ---")
-          # تم إضافة -timeout 10 لضمان عدم تعليق الأداة
-          run_cmd(f"subfinder -d {target_domain} -timeout 10 -silent -o {subdomains_file}")
-
-          if not os.path.exists(subdomains_file) or os.path.getsize(subdomains_file) == 0:
-              print("[-] No subdomains found.")
-              sys.exit(1)
-
-          with open(subdomains_file, "r") as f:
-              sub_count = len(f.readlines())
-          print(f"[+] Found {sub_count} subdomains.")
-
-          print(f"--- Step 3: Running Nuclei scan ---")
-          # تم إضافة تحديد المهلة، والمحاولات، والسرعة، وتحديد القوالب
-          run_cmd(f"nuclei -l {subdomains_file} -t nuclei-templates/ -timeout 5 -retries 1 -rate-limit 150 -o {output_report}")
-          print("[+] Scan completed successfully!")
-          '
-
-      - name: Upload Scan Artifacts
+      - name: Upload Artifacts (Reports)
         uses: actions/upload-artifact@v4
         with:
-          name: arc.io-scan-reports
+          name: arc-io-scan-reports
           path: scan_results/
