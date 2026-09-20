@@ -1,4 +1,4 @@
-name: arc.io Automated Subdomain & Nuclei Scan
+name: airvantage.net Automated Subdomain & Nuclei Scan
 
 on:
   schedule:
@@ -52,7 +52,7 @@ jobs:
           os.makedirs(output_dir, exist_ok=True)
 
           # تم التعديل هنا ليعمل على example
-          target_domain = "arc.io"
+          target_domain = "airvantage.net"
           subdomains_file = os.path.join(output_dir, f"{target_domain}_subdomains.txt")
           output_report = os.path.join(output_dir, f"{target_domain}_nuclei_report.txt")
 
