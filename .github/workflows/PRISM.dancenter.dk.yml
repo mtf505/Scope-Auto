@@ -1,9 +1,10 @@
-name: PRISM Automated Subdomain & Nuclei Scan 
+name: PRISM Automated Subdomain & Nuclei Scan
 
 on:
   schedule:
-    - cron: '0 4 * * *'
+    - cron: '0 4 * * *' # Runs daily at 8:00 AM Muscat time (4:00 UTC)
   workflow_dispatch: 
+
 jobs:
   security_scan:
     runs-on: ubuntu-latest
@@ -13,18 +14,31 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install Subfinder & Nuclei (Fast Download)
+      - name: Fetch Latest Versions & Install Tools
         run: |
-          wget -q https://github.com/projectdiscovery/subfinder/releases/download/v2.6.6/subfinder_2.6.6_linux_amd64.zip
-          unzip -o subfinder_2.6.6_linux_amd64.zip -d /usr/local/bin/
-          wget -q https://github.com/projectdiscovery/nuclei/releases/download/v3.3.5/nuclei_3.3.5_linux_amd64.zip
-          unzip -o nuclei_3.3.5_linux_amd64.zip -d /usr/local/bin/
+          # Get the latest release tags from GitHub API dynamically
+          SUBFINDER_TAG=$(curl -s https://api.github.com/repos/projectdiscovery/subfinder/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+          NUCLEI_TAG=$(curl -s https://api.github.com/repos/projectdiscovery/nuclei/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+          
+          # Remove the 'v' prefix for the filename (e.g., v3.3.5 -> 3.3.5)
+          SUBFINDER_VER=${SUBFINDER_TAG#v}
+          NUCLEI_VER=${NUCLEI_TAG#v}
+          
+          echo "Installing Subfinder $SUBFINDER_TAG and Nuclei $NUCLEI_TAG"
+          
+          # Download and install Subfinder
+          wget -q https://github.com/projectdiscovery/subfinder/releases/download/${SUBFINDER_TAG}/subfinder_${SUBFINDER_VER}_linux_amd64.zip
+          unzip -o subfinder_${SUBFINDER_VER}_linux_amd64.zip -d /usr/local/bin/
+          
+          # Download and install Nuclei
+          wget -q https://github.com/projectdiscovery/nuclei/releases/download/${NUCLEI_TAG}/nuclei_${NUCLEI_VER}_linux_amd64.zip
+          unzip -o nuclei_${NUCLEI_VER}_linux_amd64.zip -d /usr/local/bin/
 
       - name: Update Nuclei Templates
         run: nuclei -update-templates
 
       - name: Run Subfinder
-        run: subfinder -d dancenter.dk -timeout 10 -o subdomains.txt 
+        run: subfinder -d dancenter.dk -timeout 10 -o subdomains.txt
 
       - name: Run Nuclei Scan (Medium, High, Critical Only)
         run: nuclei -l subdomains.txt -severity medium,high,critical -timeout 5 -retries 1 -rate-limit 150 -o nuclei_report.txt
