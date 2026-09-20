@@ -2,78 +2,49 @@ name: airvantage.net Automated Subdomain & Nuclei Scan
 
 on:
   schedule:
-    - cron: '0 4 * * *'
-  workflow_dispatch:
+    - cron: '0 4 * * *' # Runs daily at 8:00 AM Muscat time (4:00 UTC)
+  workflow_dispatch: 
 
 jobs:
   security_scan:
     runs-on: ubuntu-latest
-
+    timeout-minutes: 60 
+    
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      - name: Set up Go Environment
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.21'
-
-      - name: Run Recon and Nuclei Scan Script
+      - name: Fetch Latest Versions & Install Tools
         run: |
-          python -c '
-          import subprocess, sys, shutil, os
-
-          def run_cmd(command):
-              print(f"[*] Running command: {command}")
-              process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
-              return process.returncode, process.stdout, process.stderr
-
-          def is_installed(name):
-              return shutil.which(name) is not None
-
-          go_bin = os.path.expanduser("~/go/bin")
-          if go_bin not in os.environ["PATH"]:
-              os.environ["PATH"] += os.pathsep + go_bin
-
-          if not is_installed("nuclei"):
-              run_cmd("go install github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest")
+          # Get the latest release tags from GitHub API dynamically
+          SUBFINDER_TAG=$(curl -s https://api.github.com/repos/projectdiscovery/subfinder/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+          NUCLEI_TAG=$(curl -s https://api.github.com/repos/projectdiscovery/nuclei/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
           
-          run_cmd("nuclei -update-templates")
+          # Remove the 'v' prefix for the filename (e.g., v3.3.5 -> 3.3.5)
+          SUBFINDER_VER=${SUBFINDER_TAG#v}
+          NUCLEI_VER=${NUCLEI_TAG#v}
+          
+          echo "Installing Subfinder $SUBFINDER_TAG and Nuclei $NUCLEI_TAG"
+          
+          # Download and install Subfinder
+          wget -q https://github.com/projectdiscovery/subfinder/releases/download/${SUBFINDER_TAG}/subfinder_${SUBFINDER_VER}_linux_amd64.zip
+          unzip -o subfinder_${SUBFINDER_VER}_linux_amd64.zip -d /usr/local/bin/
+          
+          # Download and install Nuclei
+          wget -q https://github.com/projectdiscovery/nuclei/releases/download/${NUCLEI_TAG}/nuclei_${NUCLEI_VER}_linux_amd64.zip
+          unzip -o nuclei_${NUCLEI_VER}_linux_amd64.zip -d /usr/local/bin/
 
-          if not is_installed("subfinder"):
-              run_cmd("go install github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest")
+      - name: Update Nuclei Templates
+        run: nuclei -update-templates
 
-          output_dir = "scan_results"
-          os.makedirs(output_dir, exist_ok=True)
+      - name: Run Subfinder
+        run: subfinder -d airvantage.net -timeout 10 -o subdomains.txt
 
-          # تم التعديل هنا ليعمل على example
-          target_domain = "airvantage.net"
-          subdomains_file = os.path.join(output_dir, f"{target_domain}_subdomains.txt")
-          output_report = os.path.join(output_dir, f"{target_domain}_nuclei_report.txt")
+      - name: Run Nuclei Scan (Medium, High, Critical Only)
+        run: nuclei -l subdomains.txt -severity medium,high,critical -timeout 5 -retries 1 -rate-limit 150 -o nuclei_report.txt
 
-          print(f"--- Step 2: Enumerating subdomains for target: {target_domain} ---")
-          run_cmd(f"subfinder -d {target_domain} -o {subdomains_file} -silent")
-
-          if not os.path.exists(subdomains_file) or os.path.getsize(subdomains_file) == 0:
-              print("[-] No subdomains found.")
-              sys.exit(1)
-
-          with open(subdomains_file, "r") as f:
-              sub_count = len(f.readlines())
-          print(f"[+] Found {sub_count} subdomains.")
-
-          print(f"--- Step 3: Running Nuclei scan ---")
-          run_cmd(f"nuclei -l {subdomains_file} -o {output_report}")
-          print("[+] Scan completed successfully!")
-          '
-
-      - name: Upload Scan Artifacts
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: rateitall-scan-reports
-          path: scan_results/
+          name: airvantage.net-scan-reports
+          path: nuclei_report.txt
