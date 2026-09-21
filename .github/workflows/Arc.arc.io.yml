@@ -1,4 +1,4 @@
-name: arc.oi Automated Subdomain & Nuclei Scan
+name: Arc arc.io Automated Subdomain & Nuclei Scan
 
 on:
   schedule:
@@ -39,7 +39,7 @@ jobs:
         run: nuclei -update-templates
 
       - name: Run Subfinder
-        run: subfinder -d arc.oi -timeout 10 -o subdomains.txt
+        run: subfinder -d arc.io -timeout 10 -o subdomains.txt
 
       - name: Run Nuclei Scan (Medium, High, Critical Only)
         run: nuclei -l subdomains.txt -severity medium,high,critical -timeout 5 -retries 1 -rate-limit 150 -o nuclei_report.txt
@@ -47,5 +47,5 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: arc.oi-scan-reports
+          name: arc.io-scan-reports
           path: nuclei_report.txt
