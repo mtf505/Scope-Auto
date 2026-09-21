@@ -1,4 +1,4 @@
-name: test.com Automated Subdomain & Nuclei Scan
+name: oyoos.com Automated Subdomain & Nuclei Scan
 
 on:
   schedule:
