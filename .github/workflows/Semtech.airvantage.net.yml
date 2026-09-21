@@ -1,4 +1,4 @@
-name: airvantage.net Automated Subdomain & Nuclei Scan
+name: Semtech airvantage.net Automated Subdomain & Nuclei Scan
 
 on:
   schedule:
