@@ -1,4 +1,4 @@
-name: PRISM Automated Subdomain & Nuclei Scan
+name: PRISM motel6.com Automated Subdomain & Nuclei Scan
 
 on:
   schedule:
@@ -47,5 +47,5 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: PRISM-scan-reports
+          name: motel6.com-scan-reports
           path: nuclei_report.txt
