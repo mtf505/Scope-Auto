@@ -2,50 +2,73 @@ name: Omnicell myomnicell.com Automated Subdomain & Nuclei Scan
 
 on:
   schedule:
-    - cron: '0 4 * * *' # Runs daily at 8:00 AM Muscat time (4:00 UTC)
+    - cron: '0 4 * * *'  # 8:00 AM Muscat time (4:00 UTC)
     - cron: '0 12 * * *' # 4:00 PM Muscat time (12:00 UTC)
   workflow_dispatch: 
 
 jobs:
   security_scan:
     runs-on: ubuntu-latest
-    timeout-minutes: 60 
+    timeout-minutes: 180 # Increased to 3 hours just in case
     
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Fetch Latest Versions & Install Tools
+      - name: Install Tools (Latest Versions)
         run: |
-          # Get the latest release tags from GitHub API dynamically
+          # Subfinder
           SUBFINDER_TAG=$(curl -s https://api.github.com/repos/projectdiscovery/subfinder/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
-          NUCLEI_TAG=$(curl -s https://api.github.com/repos/projectdiscovery/nuclei/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
-          
-          # Remove the 'v' prefix for the filename (e.g., v3.3.5 -> 3.3.5)
           SUBFINDER_VER=${SUBFINDER_TAG#v}
-          NUCLEI_VER=${NUCLEI_TAG#v}
-          
-          echo "Installing Subfinder $SUBFINDER_TAG and Nuclei $NUCLEI_TAG"
-          
-          # Download and install Subfinder
           wget -q https://github.com/projectdiscovery/subfinder/releases/download/${SUBFINDER_TAG}/subfinder_${SUBFINDER_VER}_linux_amd64.zip
           unzip -o subfinder_${SUBFINDER_VER}_linux_amd64.zip -d /usr/local/bin/
           
-          # Download and install Nuclei
+          # Nuclei
+          NUCLEI_TAG=$(curl -s https://api.github.com/repos/projectdiscovery/nuclei/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+          NUCLEI_VER=${NUCLEI_TAG#v}
           wget -q https://github.com/projectdiscovery/nuclei/releases/download/${NUCLEI_TAG}/nuclei_${NUCLEI_VER}_linux_amd64.zip
           unzip -o nuclei_${NUCLEI_VER}_linux_amd64.zip -d /usr/local/bin/
+          
+          # Assetfinder
+          wget -q https://github.com/tomnomnom/assetfinder/releases/latest/download/assetfinder-linux-amd64 -O /usr/local/bin/assetfinder
+          chmod +x /usr/local/bin/assetfinder
+
+          # HTTPX (New Tool)
+          HTTPX_TAG=$(curl -s https://api.github.com/repos/projectdiscovery/httpx/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+          HTTPX_VER=${HTTPX_TAG#v}
+          wget -q https://github.com/projectdiscovery/httpx/releases/download/${HTTPX_TAG}/httpx_${HTTPX_VER}_linux_amd64.zip
+          unzip -o httpx_${HTTPX_VER}_linux_amd64.zip -d /usr/local/bin/
 
       - name: Update Nuclei Templates
         run: nuclei -update-templates
 
-      - name: Run Subfinder
-        run: subfinder -d myomnicell.com -timeout 10 -o subdomains.txt
+      - name: Run Subdomain Enumeration
+        run: |
+          echo "[*] Running Subfinder..."
+          subfinder -d myomnicell.com -timeout 10 -o subdomains_temp.txt
+          
+          echo "[*] Running Assetfinder..."
+          assetfinder --subs-only myomnicell.com >> subdomains_temp.txt
+          
+          sort -u subdomains_temp.txt -o subdomains.txt
+          echo "[*] Total unique subdomains found: $(wc -l < subdomains.txt)"
+
+      - name: Filter Live Subdomains (HTTPX)
+        run: |
+          echo "[*] Filtering live subdomains using HTTPX..."
+          # -silent: يمنع الطباعة الزائدة | -mc 200,403: يجلب النطاقات التي تعمل فقط
+          cat subdomains.txt | httpx -silent -mc 200,403 -o live_subdomains.txt
+          echo "[*] Total live subdomains: $(wc -l < live_subdomains.txt)"
 
       - name: Run Nuclei Scan (Medium, High, Critical Only)
-        run: nuclei -l subdomains.txt -severity medium,high,critical -timeout 5 -retries 1 -rate-limit 150 -o nuclei_report.txt
+        # فحص النطاقات النشطة فقط
+        run: nuclei -l live_subdomains.txt -severity medium,high,critical -timeout 5 -retries 1 -rate-limit 150 -o nuclei_report.txt
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: myomnicell.com-scan-reports
-          path: nuclei_report.txt
+          name: myomnicell-scan-reports
+          path: |
+            subdomains.txt
+            live_subdomains.txt
+            nuclei_report.txt
