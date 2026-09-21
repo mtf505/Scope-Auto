@@ -1,4 +1,4 @@
-name: sierrawireless-com.go-vip.net Automated Subdomain & Nuclei Scan
+name: Semtech sierrawireless-com.go-vip.net Automated Subdomain & Nuclei Scan
 
 on:
   schedule:
