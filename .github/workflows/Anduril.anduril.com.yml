@@ -1,6 +1,6 @@
 name: Anduril anduril.com Automated Subdomain & Nuclei Scan
 
-on:
+#on:
   schedule:
     - cron: '0 0 * * *'   # 4:00 AM Muscat time (0:00 UTC + 4)
     - cron: '0 4 * * *'   # 8:00 AM Muscat time (4:00 UTC + 4)
