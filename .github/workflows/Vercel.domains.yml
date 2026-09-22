@@ -1,0 +1,66 @@
+name: Vercel-Target Automated Scan (Fixed Versions)
+
+on:
+  schedule:
+    - cron: '0 4 * * *'  # 8:00 AM Muscat time
+    - cron: '0 12 * * *' # 4:00 PM Muscat time
+  workflow_dispatch: 
+
+jobs:
+  security_scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1000 # 16 hours max
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Tools (Fixed Versions to Prevent API Rate Limits)
+        run: |
+        
+          # Install Subfinder v2.6.6
+          wget -q https://github.com/projectdiscovery/subfinder/releases/download/v2.6.6/subfinder_2.6.6_linux_amd64.zip
+          unzip -o subfinder_2.6.6_linux_amd64.zip -d /usr/local/bin/
+          
+          # Install Nuclei v3.3.5
+          wget -q https://github.com/projectdiscovery/nuclei/releases/download/v3.3.5/nuclei_3.3.5_linux_amd64.zip
+          unzip -o nuclei_3.3.5_linux_amd64.zip -d /usr/local/bin/
+          
+          # Install HTTPX v1.6.9 
+          wget -q https://github.com/projectdiscovery/httpx/releases/download/v1.6.9/httpx_1.6.9_linux_amd64.zip
+          unzip -o httpx_1.6.9_linux_amd64.zip -d /usr/local/bin/
+          
+          # Install Assetfinder
+          wget -q https://github.com/tomnomnom/assetfinder/releases/latest/download/assetfinder-linux-amd64 -O /usr/local/bin/assetfinder
+          chmod +x /usr/local/bin/assetfinder
+
+      - name: Update Nuclei Templates (Always Fresh)
+        run: nuclei -update-templates
+
+      - name: Run Scans for All Targets
+        run: |
+
+          TARGETS="vercel.live vercel.com"
+          
+          mkdir -p scan_results
+          
+          for DOMAIN in $TARGETS; do
+            echo "=================================================="
+            echo "[*] Starting scan for: $DOMAIN"
+            
+            subfinder -d $DOMAIN -timeout 10 -o subdomains_$DOMAIN.txt -silent
+            
+            cat subdomains_$DOMAIN.txt | httpx -silent -mc 200,403 -o live_$DOMAIN.txt
+            
+            if [ -s live_$DOMAIN.txt ]; then
+               nuclei -l live_$DOMAIN.txt -severity medium,high,critical -timeout 5 -retries 1 -rate-limit 150 -o scan_results/${DOMAIN}_nuclei_report.txt -silent
+            else
+               echo "[!] No live subdomains found for $DOMAIN. Skipping Nuclei scan."
+            fi
+          done
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: vercel-targets-scan-reports
+          path: scan_results/
