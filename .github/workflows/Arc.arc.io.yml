@@ -2,8 +2,8 @@ name: Arc arc.io Automated Subdomain & Nuclei Scan
 
 on:
   schedule:
-    - cron: '0 2 * * *' # Runs daily at 8:00 AM Muscat time (4:00 UTC)
-    - cron: '0 10 * * *' # 4:00 PM Muscat time (12:00 UTC)
+    - cron: '05 2 * * *' # Runs daily at 8:00 AM Muscat time (4:00 UTC)
+    - cron: '05 10 * * *' # 4:00 PM Muscat time (12:00 UTC)
   workflow_dispatch: 
 
 jobs:
