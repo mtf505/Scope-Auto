@@ -1,4 +1,4 @@
-name: BugCrowd backblaze.com Automated Subdomain & Nuclei Scan
+name: BugCrowd tickets.mgm.mo Automated Subdomain & Nuclei Scan
 
 on:
   schedule:
@@ -43,7 +43,7 @@ jobs:
         run: nuclei -update-templates
 
       - name: Run Subfinder
-        run: subfinder -d backblaze.com -timeout 10 -o subdomains.txt
+        run: subfinder -d tickets.mgm.mo -timeout 10 -o subdomains.txt
 
       - name: Run Nuclei Scan (Medium, High, Critical Only)
         run: nuclei -l subdomains.txt -severity medium,high,critical -timeout 5 -retries 1 -rate-limit 150 -o nuclei_report.txt
@@ -51,5 +51,5 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: backblaze.com-scan-reports
+          name: tickets.mgm.mo-scan-reports
           path: nuclei_report.txt
