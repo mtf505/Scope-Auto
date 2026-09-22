@@ -2,8 +2,12 @@ name: Unico uat.unico.app Automated Subdomain & Nuclei Scan
 
 on:
   schedule:
-    - cron: '02 4 * * *' # Runs daily at 8:00 AM Muscat time (4:00 UTC)
-    - cron: '02 12 * * *' # 4:00 PM Muscat time (12:00 UTC)
+    - cron: '7 0 * * *'   # 4:00 AM Muscat time (0:00 UTC + 4)
+    - cron: '7 4 * * *'   # 8:00 AM Muscat time (4:00 UTC + 4)
+    - cron: '7 8 * * *'   # 12:00 PM Muscat time (8:00 UTC + 4)
+    - cron: '7 12 * * *'  # 4:00 PM Muscat time (12:00 UTC + 4)
+    - cron: '7 16 * * *'  # 8:00 PM Muscat time (16:00 UTC + 4)
+    - cron: '7 20 * * *'  # 12:00 AM Muscat time (20:00 UTC + 4) 
   workflow_dispatch: 
 
 jobs:
