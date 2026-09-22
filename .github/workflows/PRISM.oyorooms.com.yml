@@ -2,8 +2,12 @@ name: oyorooms.com Automated Subdomain & Nuclei Scan
 
 on:
   schedule:
-    - cron: '0 4 * * *' # Runs daily at 8:00 AM Muscat time (4:00 UTC)
-    - cron: '0 12 * * *' # 4:00 PM Muscat time (12:00 UTC)
+    - cron: '5 0 * * *'   # 4:00 AM Muscat time (0:00 UTC + 4)
+    - cron: '5 4 * * *'   # 8:00 AM Muscat time (4:00 UTC + 4)
+    - cron: '5 8 * * *'   # 12:00 PM Muscat time (8:00 UTC + 4)
+    - cron: '5 12 * * *'  # 4:00 PM Muscat time (12:00 UTC + 4)
+    - cron: '5 16 * * *'  # 8:00 PM Muscat time (16:00 UTC + 4)
+    - cron: '5 20 * * *'  # 12:00 AM Muscat time (20:00 UTC + 4) 
   workflow_dispatch: 
 
 jobs:
