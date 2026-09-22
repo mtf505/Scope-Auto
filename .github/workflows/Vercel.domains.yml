@@ -18,13 +18,13 @@ jobs:
       - name: Install Tools (Fixed Versions to Prevent API Rate Limits)
         run: |
         
-          # Install Subfinder v2.6.6
+          # Install Subfinder v2.16.0
           wget -q https://github.com/projectdiscovery/subfinder/releases/download/v2.6.6/subfinder_2.6.6_linux_amd64.zip
-          unzip -o subfinder_2.6.6_linux_amd64.zip -d /usr/local/bin/
+          unzip -o subfinder_2.16.0_linux_amd64.zip -d /usr/local/bin/
           
           # Install Nuclei v3.3.5
           wget -q https://github.com/projectdiscovery/nuclei/releases/download/v3.3.5/nuclei_3.3.5_linux_amd64.zip
-          unzip -o nuclei_3.3.5_linux_amd64.zip -d /usr/local/bin/
+          unzip -o nuclei_3.11.1_linux_amd64.zip -d /usr/local/bin/
           
           
       - name: Update Nuclei Templates (Always Fresh)
