@@ -2,9 +2,12 @@ name: Anduril anduril.com Automated Subdomain & Nuclei Scan
 
 on:
   schedule:
-    - cron: '0 2 * * *' # Runs daily at 6:00 AM Muscat time (4:00 UTC)
-    - cron: '0 10 * * *' # 4:00 PM Muscat time (12:00 UTC)
-  workflow_dispatch: 
+    - cron: '0 0 * * *'   # 4:00 AM Muscat time (0:00 UTC + 4)
+    - cron: '0 4 * * *'   # 8:00 AM Muscat time (4:00 UTC + 4)
+    - cron: '0 8 * * *'   # 12:00 PM Muscat time (8:00 UTC + 4)
+    - cron: '0 12 * * *'  # 4:00 PM Muscat time (12:00 UTC + 4)
+    - cron: '0 16 * * *'  # 8:00 PM Muscat time (16:00 UTC + 4)
+    - cron: '0 20 * * *'  # 12:00 AM Muscat time (20:00 UTC + 4)  
 
 jobs:
   security_scan:
