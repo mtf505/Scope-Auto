@@ -26,14 +26,7 @@ jobs:
           wget -q https://github.com/projectdiscovery/nuclei/releases/download/v3.3.5/nuclei_3.3.5_linux_amd64.zip
           unzip -o nuclei_3.3.5_linux_amd64.zip -d /usr/local/bin/
           
-          # Install HTTPX v1.6.9 
-          wget -q https://github.com/projectdiscovery/httpx/releases/download/v1.6.9/httpx_1.6.9_linux_amd64.zip
-          unzip -o httpx_1.6.9_linux_amd64.zip -d /usr/local/bin/
           
-          # Install Assetfinder
-          wget -q https://github.com/tomnomnom/assetfinder/releases/latest/download/assetfinder-linux-amd64 -O /usr/local/bin/assetfinder
-          chmod +x /usr/local/bin/assetfinder
-
       - name: Update Nuclei Templates (Always Fresh)
         run: nuclei -update-templates
 
