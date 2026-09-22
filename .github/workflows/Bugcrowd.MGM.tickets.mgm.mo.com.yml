@@ -1,4 +1,4 @@
-name: MGM tickets.mgm.mo Automated Subdomain & Nuclei Scan
+name: BugCrowd tickets.mgm.mo Automated Subdomain & Nuclei Scan
 
 on:
   schedule:
