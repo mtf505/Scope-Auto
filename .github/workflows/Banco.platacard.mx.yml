@@ -2,8 +2,12 @@ name: Banco platacard.mx Automated Subdomain & Nuclei Scan
 
 on:
   schedule:
-    - cron: '02 2 * * *' # Runs daily at 8:00 AM Muscat time (4:00 UTC)
-    - cron: '02 10 * * *' # 4:00 PM Muscat time (12:00 UTC)
+    - cron: '3 0 * * *'   # 4:00 AM Muscat time (0:00 UTC + 4)
+    - cron: '3 4 * * *'   # 8:00 AM Muscat time (4:00 UTC + 4)
+    - cron: '3 8 * * *'   # 12:00 PM Muscat time (8:00 UTC + 4)
+    - cron: '3 12 * * *'  # 4:00 PM Muscat time (12:00 UTC + 4)
+    - cron: '3 16 * * *'  # 8:00 PM Muscat time (16:00 UTC + 4)
+    - cron: '3 20 * * *'  # 12:00 AM Muscat time (20:00 UTC + 4) 
   workflow_dispatch: 
 
 jobs:
