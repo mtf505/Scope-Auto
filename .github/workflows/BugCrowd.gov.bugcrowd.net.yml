@@ -1,4 +1,4 @@
-name: BugCrow gov.bugcrowd.net Automated Subdomain & Nuclei Scan
+name: BugCrowd gov.bugcrowd.net Automated Subdomain & Nuclei Scan
 
 on:
   schedule:
