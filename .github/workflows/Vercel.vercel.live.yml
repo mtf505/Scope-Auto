@@ -2,8 +2,8 @@ name: Vercel vercel.live Automated Subdomain & Nuclei Scan
 
 on:
   schedule:
-    - cron: '0 4 * * *' # Runs daily at 8:00 AM Muscat time (4:00 UTC)
-    - cron: '0 12 * * *' # 4:00 PM Muscat time (12:00 UTC)
+    - cron: '04 4 * * *' # Runs daily at 8:00 AM Muscat time (4:00 UTC)
+    - cron: '04 12 * * *' # 4:00 PM Muscat time (12:00 UTC)
   workflow_dispatch: 
 
 jobs:
