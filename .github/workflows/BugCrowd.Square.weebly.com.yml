@@ -1,0 +1,37 @@
+name: BugCrowd weebly.com Automated Subdomain & Nuclei Scan
+
+on:
+  schedule:
+    - cron: '1 0 * * *'   # 4:00 AM Muscat time (0:00 UTC + 4)
+    - cron: '1 4 * * *'   # 8:00 AM Muscat time (4:00 UTC + 4)
+    - cron: '1 8 * * *'   # 12:00 PM Muscat time (8:00 UTC + 4)
+    - cron: '1 12 * * *'  # 4:00 PM Muscat time (12:00 UTC + 4)
+    - cron: '1 16 * * *'  # 8:00 PM Muscat time (16:00 UTC + 4)
+    - cron: '1 20 * * *'  # 12:00 AM Muscat time (20:00 UTC + 4) 
+  workflow_dispatch: 
+
+jobs:
+  security_scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1000
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Fetch Latest Versions & Install Tools
+        run: |
+          wget -q https://github.com/projectdiscovery/nuclei/releases/download/${NUCLEI_TAG}/nuclei_${NUCLEI_VER}_linux_amd64.zip
+          unzip -o nuclei_${NUCLEI_VER}_linux_amd64.zip -d /usr/local/bin/
+
+      - name: Update Nuclei Templates
+        run: nuclei -update-templates
+
+      - name: Run Nuclei Scan (Medium, High, Critical Only)
+        run: nuclei -u weebly.com -severity medium,high,critical -timeout 5 -retries 1 -rate-limit 150 -o nuclei_report.txt
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: weebly.com-scan-reports
+          path: nuclei_report.txt
