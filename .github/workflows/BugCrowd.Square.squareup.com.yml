@@ -46,7 +46,7 @@ jobs:
         run: subfinder -d squareup.com -timeout 10 -o subdomains.txt
 
       - name: Run Nuclei Scan (Medium, High, Critical Only)
-        run: nuclei -l subdomains.txt -severity medium,high,critical -timeout 5 -retries 1 -rate-limit 150 -o nuclei_report.txt
+        run: nuclei -l subdomains.txt -severity medium,high,critical -c 100 -bs 100 -timeout 5 -retries 1 -rate-limit 150 -o nuclei_report.txt
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
