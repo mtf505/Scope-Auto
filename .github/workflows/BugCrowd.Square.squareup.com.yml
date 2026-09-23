@@ -42,13 +42,13 @@ jobs:
           subfinder -d squareup.com \
             -all -recursive \
             -timeout 10 -max-time 25 \
-            -silent -o subdomains_all.txt
+             -o subdomains_all.txt
           echo "📊 Total subdomains found: $(wc -l < subdomains_all.txt)"
 
       - name: Filter Live Subdomains with httpx
         run: |
           cat subdomains_all.txt | httpx \
-            -silent -threads 250 -timeout 5 \
+             -threads 250 -timeout 5 \
             -retries 1 -no-color \
             -o live_subdomains.txt
           echo "✅ Live subdomains: $(wc -l < live_subdomains.txt)"
@@ -92,7 +92,7 @@ jobs:
           echo "✅ Nuclei $NUCLEI_TAG installed"
 
       - name: Update Nuclei Templates
-        run: nuclei -update-templates -silent
+        run: nuclei -update-templates 
 
       - name: Run Nuclei on Chunk ${{ matrix.chunk }}
         run: |
@@ -103,7 +103,7 @@ jobs:
             -c 250 -bs 250 \
             -timeout 4 -retries 1 \
             -rate-limit 800 \
-            -stats -silent -no-color \
+            -stats -no-color \
             -o nuclei_report_${{ matrix.chunk }}.txt
           echo "✅ Chunk ${{ matrix.chunk }} done - Findings: $(wc -l < nuclei_report_${{ matrix.chunk }}.txt 2>/dev/null || echo 0)"
 
