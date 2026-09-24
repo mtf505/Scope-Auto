@@ -2,12 +2,12 @@ name: Semtech sierrawireless.com Automated Subdomain & Nuclei Scan
 
 on:
   schedule:
-    - cron: '6 0 * * *'   # 4:00 AM Muscat time (0:00 UTC + 4)
-    - cron: '6 4 * * *'   # 8:00 AM Muscat time (4:00 UTC + 4)
-    - cron: '6 8 * * *'   # 12:00 PM Muscat time (8:00 UTC + 4)
-    - cron: '6 12 * * *'  # 4:00 PM Muscat time (12:00 UTC + 4)
-    - cron: '6 16 * * *'  # 8:00 PM Muscat time (16:00 UTC + 4)
-    - cron: '6 20 * * *'  # 12:00 AM Muscat time (20:00 UTC + 4) 
+    - cron: '15 0 * * *'   # 4:00 AM Muscat time (0:00 UTC + 4)
+    - cron: '15 4 * * *'   # 8:00 AM Muscat time (4:00 UTC + 4)
+    - cron: '15 8 * * *'   # 12:00 PM Muscat time (8:00 UTC + 4)
+    - cron: '15 12 * * *'  # 4:00 PM Muscat time (12:00 UTC + 4)
+    - cron: '15 16 * * *'  # 8:00 PM Muscat time (16:00 UTC + 4)
+    - cron: '15 20 * * *'  # 12:00 AM Muscat time (20:00 UTC + 4) 
   workflow_dispatch: 
 
 jobs:
