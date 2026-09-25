@@ -1,0 +1,145 @@
+name: BugCrowd rapyd.org Automated Subdomain & Nuclei Scan
+
+on:
+  schedule:
+    - cron: '9 0 * * *'   # 4:00 AM Muscat time
+    - cron: '9 4 * * *'   # 8:00 AM Muscat time
+    - cron: '9 8 * * *'   # 12:00 PM Muscat time
+    - cron: '9 12 * * *'  # 4:00 PM Muscat time
+    - cron: '9 16 * * *'  # 8:00 PM Muscat time
+    - cron: '9 20 * * *'  # 12:00 AM Muscat time
+  workflow_dispatch:
+
+jobs:
+  # ==========================================
+  # المرحلة 1: جمع الـ Subdomains + فلترة الحية
+  # ==========================================
+  subdomain_scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Subfinder & httpx
+        run: |
+          # Subfinder
+          SUBFINDER_TAG=$(curl -s https://api.github.com/repos/projectdiscovery/subfinder/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+          SUBFINDER_VER=${SUBFINDER_TAG#v}
+          wget -q https://github.com/projectdiscovery/subfinder/releases/download/${SUBFINDER_TAG}/subfinder_${SUBFINDER_VER}_linux_amd64.zip
+          unzip -o subfinder_${SUBFINDER_VER}_linux_amd64.zip -d /usr/local/bin/
+
+          # httpx
+          HTTPX_TAG=$(curl -s https://api.github.com/repos/projectdiscovery/httpx/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+          HTTPX_VER=${HTTPX_TAG#v}
+          wget -q https://github.com/projectdiscovery/httpx/releases/download/${HTTPX_TAG}/httpx_${HTTPX_VER}_linux_amd64.zip
+          unzip -o httpx_${HTTPX_VER}_linux_amd64.zip -d /usr/local/bin/
+
+          echo "✅ Subfinder $SUBFINDER_TAG & httpx $HTTPX_TAG installed"
+
+      - name: Run Subfinder (All Sources + Recursive)
+        run: |
+          subfinder -d rapyd.org \
+            -all -recursive \
+            -timeout 10 -max-time 25 \
+             -o subdomains_all.txt
+          echo "📊 Total subdomains found: $(wc -l < subdomains_all.txt)"
+
+      - name: Filter Live Subdomains with httpx
+        run: |
+          cat subdomains_all.txt | httpx \
+             -threads 250 -timeout 5 \
+            -retries 1 -no-color \
+            -o live_subdomains.txt
+          echo "✅ Live subdomains: $(wc -l < live_subdomains.txt)"
+
+      - name: Split into 5 Chunks for Parallel Scanning
+        run: |
+          split -n l/5 -d live_subdomains.txt chunk_
+          ls -la chunk_*
+
+      - name: Upload Chunks as Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: subdomain-chunks
+          path: chunk_*
+          retention-days: 1
+
+  # ==========================================
+  # المرحلة 2: فحص Nuclei بالتوازي (5 أجزاء)
+  # ==========================================
+  nuclei_scan:
+    needs: subdomain_scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 5
+      matrix:
+        chunk: [0, 1, 2, 3, 4]
+    steps:
+      - name: Download Chunks
+        uses: actions/download-artifact@v4
+        with:
+          name: subdomain-chunks
+
+      - name: Install Nuclei
+        run: |
+          NUCLEI_TAG=$(curl -s https://api.github.com/repos/projectdiscovery/nuclei/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+          NUCLEI_VER=${NUCLEI_TAG#v}
+          wget -q https://github.com/projectdiscovery/nuclei/releases/download/${NUCLEI_TAG}/nuclei_${NUCLEI_VER}_linux_amd64.zip
+          unzip -o nuclei_${NUCLEI_VER}_linux_amd64.zip -d /usr/local/bin/
+          echo "✅ Nuclei $NUCLEI_TAG installed"
+
+      - name: Update Nuclei Templates
+        run: nuclei -update-templates 
+
+      - name: Run Nuclei on Chunk ${{ matrix.chunk }}
+        run: |
+          echo "🔍 Scanning chunk_0${{ matrix.chunk }} ($(wc -l < chunk_0${{ matrix.chunk }}) targets)"
+          nuclei -l chunk_0${{ matrix.chunk }} \
+            -severity medium,high,critical \
+            -exclude-tags fuzz,dos,brute-force \
+            -c 250 -bs 250 \
+            -timeout 4 -retries 1 \
+            -rate-limit 800 \
+            -stats -no-color \
+            -o nuclei_report_${{ matrix.chunk }}.txt
+          echo "✅ Chunk ${{ matrix.chunk }} done - Findings: $(wc -l < nuclei_report_${{ matrix.chunk }}.txt 2>/dev/null || echo 0)"
+
+      - name: Upload Nuclei Report for Chunk
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuclei-report-${{ matrix.chunk }}
+          path: nuclei_report_${{ matrix.chunk }}.txt
+          retention-days: 7
+
+  # ==========================================
+  # المرحلة 3: دمج التقارير في ملف واحد
+  # ==========================================
+  merge_reports:
+    needs: nuclei_scan
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Download All Nuclei Reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: nuclei-report-*
+          merge-multiple: true
+
+      - name: Merge Reports
+        run: |
+          echo "📦 Merging all reports..."
+          cat nuclei_report_*.txt > final_report.txt 2>/dev/null || true
+          echo "📊 Total findings: $(wc -l < final_report.txt)"
+          echo "--- Preview ---"
+          head -20 final_report.txt
+
+      - name: Upload Final Combined Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: rapyd.org-final-report
+          path: final_report.txt
+          retention-days: 30
