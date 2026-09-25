@@ -2,12 +2,12 @@ name: BugCrowd rapyd.com Automated Subdomain & Nuclei Scan
 
 on:
   schedule:
-    - cron: '9 0 * * *'   # 4:00 AM Muscat time
-    - cron: '9 4 * * *'   # 8:00 AM Muscat time
-    - cron: '9 8 * * *'   # 12:00 PM Muscat time
-    - cron: '9 12 * * *'  # 4:00 PM Muscat time
-    - cron: '9 16 * * *'  # 8:00 PM Muscat time
-    - cron: '9 20 * * *'  # 12:00 AM Muscat time
+    - cron: '30 0 * * *'   # 4:00 AM Muscat time
+    - cron: '30 4 * * *'   # 8:00 AM Muscat time
+    - cron: '30 8 * * *'   # 12:00 PM Muscat time
+    - cron: '30 12 * * *'  # 4:00 PM Muscat time
+    - cron: '30 16 * * *'  # 8:00 PM Muscat time
+    - cron: '30 20 * * *'  # 12:00 AM Muscat time
   workflow_dispatch:
 
 jobs:
