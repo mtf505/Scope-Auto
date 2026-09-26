@@ -2,12 +2,12 @@ name: BugCrowd squareup.com Automated Subdomain & Nuclei Scan
 
 on:
   schedule:
-    - cron: '40 0 * * *'   # 4:00 AM Muscat time
-    - cron: '40 4 * * *'   # 8:00 AM Muscat time
-    - cron: '40 8 * * *'   # 12:00 PM Muscat time
-    - cron: '40 12 * * *'  # 4:00 PM Muscat time
-    - cron: '40 16 * * *'  # 8:00 PM Muscat time
-    - cron: '40 20 * * *'  # 12:00 AM Muscat time
+    - cron: '20 0 * * *'   # 4:00 AM Muscat time
+    - cron: '20 4 * * *'   # 8:00 AM Muscat time
+    - cron: '20 8 * * *'   # 12:00 PM Muscat time
+    - cron: '20 12 * * *'  # 4:00 PM Muscat time
+    - cron: '20 16 * * *'  # 8:00 PM Muscat time
+    - cron: '20 20 * * *'  # 12:00 AM Muscat time
   workflow_dispatch:
 
 jobs:
