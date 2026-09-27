@@ -16,5 +16,5 @@ jobs:
         with:
           token: ${{ github.token }}
           repository: ${{ github.repository }}
-          retain_days: 0          # 0 = delete all runs regardless of age
+          retain_days: 1          # 0 = delete all runs regardless of age
           keep_minimum_runs: 0    # 0 = keep zero runs (except current run)
