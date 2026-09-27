@@ -2,12 +2,12 @@ name: BugCrowd etoro.com Automated Subdomain & Nuclei Scan
 
 on:
   schedule:
-    - cron: '9 0 * * *'   # 4:00 AM Muscat time
-    - cron: '9 4 * * *'   # 8:00 AM Muscat time
-    - cron: '9 8 * * *'   # 12:00 PM Muscat time
-    - cron: '9 12 * * *'  # 4:00 PM Muscat time
-    - cron: '9 16 * * *'  # 8:00 PM Muscat time
-    - cron: '9 20 * * *'  # 12:00 AM Muscat time
+    - cron: '10 0 * * *'   # 4:00 AM Muscat time
+    - cron: '10 4 * * *'   # 8:00 AM Muscat time
+    - cron: '10 8 * * *'   # 12:00 PM Muscat time
+    - cron: '10 12 * * *'  # 4:00 PM Muscat time
+    - cron: '10 16 * * *'  # 8:00 PM Muscat time
+    - cron: '10 20 * * *'  # 12:00 AM Muscat time
   workflow_dispatch:
 
 jobs:
