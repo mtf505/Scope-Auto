@@ -1,4 +1,4 @@
-name: BugCrowd app.intercom.com Automated Subdomain & Nuclei Scan
+name: BugCrowd github.com/fireblocks/mpc-lib Automated Subdomain & Nuclei Scan
 
 on:
   schedule:
@@ -46,10 +46,10 @@ jobs:
         #run: subfinder -d app.intercom.com -timeout 10 -o subdomains.txt
 
       - name: Run Nuclei Scan (Medium, High, Critical Only)
-        run: nuclei -u app.intercom.com -severity medium,high,critical -timeout 5 -retries 1 -rate-limit 150 -o nuclei_report.txt
+        run: nuclei -u github.com/fireblocks/mpc-lib -severity medium,high,critical -timeout 5 -retries 1 -rate-limit 150 -o nuclei_report.txt
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: app.intercom.com-scan-reports
+          name: github.com/fireblocks/mpc-lib-scan-reports
           path: nuclei_report.txt
