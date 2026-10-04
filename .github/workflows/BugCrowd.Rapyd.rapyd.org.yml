@@ -98,7 +98,7 @@ jobs:
         run: |
           echo "🔍 Scanning chunk_0${{ matrix.chunk }} ($(wc -l < chunk_0${{ matrix.chunk }}) targets)"
           nuclei -l chunk_0${{ matrix.chunk }} \
-            -severity medium,high,critical \
+            -severity low,medium,high,critical \
             -exclude-tags fuzz,dos,brute-force \
             -c 250 -bs 250 \
             -timeout 4 -retries 1 \
