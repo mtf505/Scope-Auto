@@ -1,4 +1,4 @@
-اname: BugCrowd github.com/fireblocks/mpc-lib Automated Subdomain & Nuclei Scan
+name : github.com/fireblocks/mpc-lib Automated Subdomain & Nuclei scan
 
 on:
   schedule:
