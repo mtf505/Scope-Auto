@@ -1,4 +1,4 @@
-name: BugCrowd github.com/fireblocks/mpc-lib Automated Subdomain & Nuclei Scan
+طيباname: BugCrowd github.com/fireblocks/mpc-lib Automated Subdomain & Nuclei Scan
 
 on:
   schedule:
@@ -48,8 +48,8 @@ jobs:
       - name: Run Nuclei Scan (Medium, High, Critical Only)
         run: nuclei -u github.com/fireblocks/mpc-lib -severity medium,high,critical -timeout 5 -retries 1 -rate-limit 150 -o nuclei_report.txt
 
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
+      #- name: Upload Artifacts
+        #uses: actions/upload-artifact@v4
         with:
           name: github.com/fireblocks/mpc-lib-scan-reports
           path: nuclei_report.txt
