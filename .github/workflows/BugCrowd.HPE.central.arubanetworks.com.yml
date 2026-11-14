@@ -1,4 +1,4 @@
-name: HPE.central.arubanetworks.com Automated Subdomain & Nuclei Scan
+name: BugCrowd HPE.central.arubanetworks.com Automated Subdomain & Nuclei Scan
 
 on:
   schedule:
